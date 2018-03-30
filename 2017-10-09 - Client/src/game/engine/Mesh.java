@@ -13,7 +13,7 @@ import org.joml.Vector3f;
 
 public class Mesh {
 	
-	Matrix4f worldMatrix = new Matrix4f();
+	public Matrix4f worldMatrix = new Matrix4f();
 	public Vector3f rotation = new Vector3f();
 	public Vector3f position = new Vector3f();
 	
@@ -26,14 +26,32 @@ public class Mesh {
 
 	int vao;
 	
+	public int hash = 0;
+	
 	public Mesh(Geometry geometry, Material material) {
 		this.geometry = geometry;
 		this.material = material;
 		
+		
+		hash = geometry.vertices.hashCode()
+				+ geometry.faces.hashCode()
+				+ geometry.texCoords.hashCode()
+				+ material.program.vertex.source.hashCode()
+				+ material.program.fragment.source.hashCode()
+				+ material.texture.image.hashCode();
+		
+		if(geometry.normals != null) {
+			hash += geometry.normals.hashCode();
+		}
+		
+		
+		/*
 		vao = glGenVertexArrays();
 		glBindVertexArray(vao);
 		
-		material.program.use();
+		if(!material.program.isUsedNow()) {
+			material.program.use();
+		}
 		//System.out.println(material.program.fragment.source);
 		
 		int vb = glCreateBuffers();
@@ -65,45 +83,45 @@ public class Mesh {
 			//System.out.println("geometry.texCoords != null");
 			glUniform1i(glGetUniformLocation(material.program.id, "useTexture"), 1);
 		}
+		*/
 		
 		projectionMatrixLocation = glGetUniformLocation(material.program.id, "projectionMatrix");
 		viewMatrixLocation = glGetUniformLocation(material.program.id, "viewMatrix");
 		worldMatrixLocation = glGetUniformLocation(material.program.id, "worldMatrix");
+		
 	}
 	
 	public static Mesh load(MeshBuffer buffer) {
 		return new Mesh(buffer.getGeometry(), buffer.getMaterial());
 	}
 	
-	public void render(Camera camera) {	
+	public void render() {
 		glBindVertexArray(vao);
-		material.program.use();
-
-		glEnable(GL_DEPTH_TEST);
 		
-		if(material.texture != null) {
-			material.texture.bind();
-			glActiveTexture(GL_TEXTURE0);
+		if(!material.program.isUsedNow()) {
+			material.program.use();
+			glEnable(GL_DEPTH_TEST);	//to correct
 		}
 
-		worldMatrix.rotationX(rotation.x);
-		worldMatrix.rotationY(rotation.y);
-		worldMatrix.rotationZ(rotation.z);
-		worldMatrix.translate(position);
-
+		if(material.texture != null) {
+			if(!material.texture.isBound()) {
+				System.out.println("sss");
+				material.texture.bind();
+			}
+			glActiveTexture(GL_TEXTURE0);
+		}
+		
+		/*
+		material.texture.bind();
+		glActiveTexture(GL_TEXTURE0);
+		*/
+		
 		float[] worldElements = new float[16];
 		worldMatrix.get(worldElements);
 
-		float[] projectionElements = new float[16];
-		camera.projectionMatrix.get(projectionElements);
-
-		float[] viewElements = new float[16];
-		camera.viewMatrix.get(viewElements);
-
-		glUniformMatrix4fv(projectionMatrixLocation, false, projectionElements);
-		glUniformMatrix4fv(viewMatrixLocation, false, viewElements);
 		glUniformMatrix4fv(worldMatrixLocation, false, worldElements);
-
+		
 		glDrawElements(GL_TRIANGLES, geometry.faces.length, GL_UNSIGNED_INT, 0);
+		
 	}
 }

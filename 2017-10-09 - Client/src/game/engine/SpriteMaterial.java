@@ -7,5 +7,9 @@ public class SpriteMaterial extends Material{
 		
 		program = spriteProgram;
 	}
+	
+	public SpriteMaterial() {
+		this(null);
+	}
 
 }

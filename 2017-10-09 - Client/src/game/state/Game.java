@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import game.Main;
 import game.World;
+import game.engine.Batch;
 import game.engine.Camera;
 import game.engine.CubeGeometry;
 import game.engine.Geometry;
@@ -44,18 +45,29 @@ public class Game extends State{
 		camera.position.y = -10;
 		camera.rotation.x = (float) (Math.PI / 4);
 		
-		Unit.loadMesh();
+		//Unit.loadMesh();
 		
 		
-
+		
 		{
-			Texture2D texture = new Texture2D("/textures/texture.png");
+			//Texture2D texture = new Texture2D("/textures/rubik's cube.png");
+			Texture2D texture = new Texture2D("/textures/cherry.png");
 			Material mat1 = new SpriteMaterial(texture);
-			//System.out.println(mat1.program.fragment.source);
-			Sprite sprite = new Sprite(mat1);
-			scene.add(sprite);
-			sprite.position.set(0, 0, -10);
+			for(int y = 0; y < 1050; y++) {
+				for(int x = 0; x < 1050; x++) {
+					//System.out.println(mat1.program.fragment.source);
+					Sprite sprite = new Sprite(mat1);
+					scene.add(sprite);
+					sprite.position.set(0 + x - 20, 0 + y - 20, -10);
+					sprite.worldMatrix.rotationX(sprite.rotation.x);
+					sprite.worldMatrix.rotationY(sprite.rotation.y);
+					sprite.worldMatrix.rotationZ(sprite.rotation.z);
+					sprite.worldMatrix.translate(sprite.position);
+				}
+			}
 		}
+		
+		
 		
 		{
 			Geometry geometry = new CubeGeometry(1.0f, 1.0f, 1.0f);
@@ -67,6 +79,8 @@ public class Game extends State{
 			scene.add(mesh);
 		}
 		
+		
+		
 		{
 			Geometry geometry = new CubeGeometry(1000.0f, 1000.0f, 1000.0f);
 			
@@ -77,6 +91,8 @@ public class Game extends State{
 			scene.add(mesh);
 		}
 		
+		
+		/*
 		{
 			ArrayList<MeshBuffer> meshList = ObjLoader.load("/models/block.obj");
 			Mesh mesh2 = Mesh.load(meshList.get(0));
@@ -86,9 +102,12 @@ public class Game extends State{
 			
 			scene.add(mesh2);
 		}
+		*/
 		
 		
+		scene.buildBatches();
 		
+		/*
 		socket.send("login", "asdasd");
 		
 		socket.on("units", buffer -> {
@@ -109,7 +128,7 @@ public class Game extends State{
 			}
 			
 			
-			/*
+			////
 			if(!world.unitList.isEmpty() && world.unitList.get(0).mesh != null) {
 				Mesh m0 = world.unitList.get(0).mesh;
 				for(int i = 0; i < scene.meshList.size(); i++) {
@@ -120,7 +139,7 @@ public class Game extends State{
 					}
 				}
 			}
-			*/
+			////
 			
 			world.unitList.clear();
 			
@@ -140,12 +159,35 @@ public class Game extends State{
 			System.out.println("world.unitList.size(): " + world.unitList.size());
 			System.out.println("scene.meshList.size(): " + scene.meshList.size());
 		});
+		*/
+		
+		/*
+		for(int i = 0; i < scene.batchList.size(); i++) {
+			Batch b = scene.batchList.get(i);
+			System.out.println(b.meshList.size() + " " + b.hash);
+		}
+		*/
+		
 	}
 	
 	public void render() {
 		window.render(scene, camera);
+		
+		/*
+		for(int i = 0; i < Math.min(scene.meshList.size(), 10); i++) {
+			Mesh m = scene.meshList.get(i);
+			System.out.print(m.hash + " ");
+		}
+		System.out.println();
+		*/
+		
+		//System.out.println("batches: ");
+		
+		
+		
+		
 	}
-	
+	/*
 	public synchronized void loadUnits() {
 		for(int i = 0; i < world.unitList.size(); i++) {
 			Unit u = world.unitList.get(i);
@@ -154,10 +196,11 @@ public class Game extends State{
 		}
 		
 	}
+	*/
 	
 	public void update() {
 		
-		loadUnits();
+		//loadUnits();
 		
 		double speed = 0.1;
 		

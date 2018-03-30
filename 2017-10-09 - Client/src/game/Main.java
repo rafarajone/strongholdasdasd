@@ -65,12 +65,22 @@ public class Main {
 		game = new Game(socket, world, window, keyboard);
 		
 		long time = System.nanoTime();
+		long time2 = System.nanoTime();
+		int fps = 0;
 		while (!window.shouldClose()) {
 
 			if (System.nanoTime() - time > UPDATE_TIME) {
 
 				update();
 				time += UPDATE_TIME;
+			}
+			
+			if (System.nanoTime() - time2 > SECOND) {
+
+				System.out.println("FPS: " + fps);
+				
+				fps = 0;
+				time2 += SECOND;
 			}
 
 			switch(state) {
@@ -80,6 +90,7 @@ public class Main {
 				game.render();
 				break;
 			}
+			fps++;
 			//window.render(scene, camera);
 			window.update();
 		}

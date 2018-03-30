@@ -7,6 +7,8 @@ public class ShaderProgram {
 
 	public Shader vertex, fragment;
 	int id;
+	
+	public static int currentProgramId = -1234;
 
 	public ShaderProgram(Shader vertex, Shader fragment) {
 		this.vertex = vertex;
@@ -28,7 +30,11 @@ public class ShaderProgram {
 	}
 
 	public void use() {
+		currentProgramId = id;
 		glUseProgram(id);
 	}
-
+	
+	public boolean isUsedNow() {
+		return id == currentProgramId;
+	}
 }

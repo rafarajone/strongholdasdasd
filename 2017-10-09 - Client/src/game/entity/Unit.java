@@ -26,12 +26,13 @@ public class Unit {
 		this.y = y;
 		
 	}
-	
+	/*
 	public static void loadMesh() {
 		MeshBuffer meshBuffer = ObjLoader.load("/models/block.obj").get(0);
 		geometry = meshBuffer.getGeometry();
 		material = meshBuffer.getMaterial();
 	}
+	*/
 	
 	public void load() {
 		if(mesh != null) return;

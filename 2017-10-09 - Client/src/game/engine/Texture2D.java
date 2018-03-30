@@ -14,13 +14,17 @@ import static org.lwjgl.opengl.GL11.glGenTextures;
 import static org.lwjgl.opengl.GL11.glTexImage2D;
 import static org.lwjgl.opengl.GL11.glTexParameteri;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL30.*;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 import org.lwjgl.BufferUtils;
 
@@ -29,10 +33,15 @@ import game.Main;
 public class Texture2D {
 
 	public int id;
+	
+	public int currentBoundTextureId = -1234; //Some random value
+	
+	BufferedImage image;
 
 	public Texture2D(String path) {
-		//System.out.println("Texture2D constructor: path: " + path);
-		BufferedImage image = loadImage(path);
+		System.out.println("Texture2D constructor: path: " + path);
+		image = loadImage(path);
+		//JOptionPane.showMessageDialog(null, "", "", 0, new ImageIcon(image));
 		id = loadTexture(image);
 	}
 
@@ -88,12 +97,23 @@ public class Texture2D {
 		*/
 		
 		
+		int id = glGenTextures();
+		glBindTexture(GL_TEXTURE_2D, id);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		
 		byte[] pixels = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
+
 		int[] ipixels = null;
-		int internalFormat = 0;
 		
 		switch(image.getType()) {
 		case BufferedImage.TYPE_3BYTE_BGR:
+			System.out.println("Texture2D: Bufferedimage type: TYPE_3BYTE_BGR");
+			
 			ipixels = new int[pixels.length / 3];
 			for (int i = 0; i < ipixels.length; i++) {
 				int n = ((pixels[i * 3 + 2] & 0xFF) << 0) |
@@ -101,9 +121,16 @@ public class Texture2D {
 						((pixels[i * 3 + 0] & 0xFF) << 16);
 				ipixels[i] = n;
 			}
-			internalFormat = GL_RGBA8;
+			
+			/*
+			BufferedImage im = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+			im.getGraphics().drawImage(image, 0, 0, null);
+			int[] pixels2 = ((DataBufferInt)im.getRaster().getDataBuffer()).getData();
+			*/
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, ipixels);
 			break;
 		case BufferedImage.TYPE_4BYTE_ABGR:
+			System.out.println("Texture2D: Bufferedimage type: TYPE_4BYTE_ABGR");
 			ipixels = new int[pixels.length / 4];
 			for (int i = 0; i < ipixels.length; i++) {
 				int n = ((pixels[i * 4 + 3] & 0xFF) << 0) |
@@ -112,7 +139,12 @@ public class Texture2D {
 						((pixels[i * 4 + 0] & 0xFF) << 24);
 				ipixels[i] = n;
 			}
-			internalFormat = GL_RGB8;
+			/*
+			BufferedImage im1 = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			im1.getGraphics().drawImage(image, 0, 0, null);
+			int[] pixels21 = ((DataBufferInt)im1.getRaster().getDataBuffer()).getData();
+			*/
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, ipixels);
 			break;
 			default:
 				System.out.println("Texture2D: Bufferedimage unrecognized type: " + image.getType());
@@ -120,7 +152,9 @@ public class Texture2D {
 		}
 		
 		
-	
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_2D);
 		
 		/*
 		
@@ -133,22 +167,13 @@ public class Texture2D {
 		
 		//printBytes(buffer.array());
 		*/
+
 		
-		
-		
-		int id = glGenTextures();
-		glBindTexture(GL_TEXTURE_2D, id);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, ipixels);
-
 		return id;
 	}
+	
+	
+	
 	
 	public static BufferedImage loadImage(String path) {
 		try {
@@ -160,7 +185,12 @@ public class Texture2D {
 	}
 
 	public void bind() {
+		currentBoundTextureId = id;
 		glBindTexture(GL_TEXTURE_2D, id);
+	}
+	
+	public boolean isBound() {
+		return id == currentBoundTextureId;
 	}
 
 }

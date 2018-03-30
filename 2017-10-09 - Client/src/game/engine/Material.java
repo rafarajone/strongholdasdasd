@@ -1,13 +1,19 @@
 package game.engine;
 
+import java.util.ArrayList;
+
 import game.Main;
 
 public class Material {
+	
+	static ArrayList<Material> usedMaterials = new ArrayList<Material>(); //should work
 	
 	protected static ShaderProgram spriteProgram;
 	protected static ShaderProgram defaultProgram;
 	
 	public ShaderProgram program = defaultProgram;
+	
+	Texture2D texture;
 
 	static {
 		String spriteVertexSource = Main.readFile("/shaders/spriteVertex.glsl");
@@ -27,11 +33,9 @@ public class Material {
 		defaultProgram = new ShaderProgram(defaultVertex, defaultFragment);
 	}
 	
-	Texture2D texture;
-	
 	public Material(Texture2D texture) {
 		this.texture = texture;
-		
+		usedMaterials.add(this);
 	}
 	
 }
